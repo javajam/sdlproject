@@ -1,4 +1,4 @@
-package com.eleroy.sdlproject;
+package com.eleroy.sdlproject.services;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
@@ -11,6 +11,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import com.eleroy.sdlproject.BuildConfig;
+import com.eleroy.sdlproject.R;
 import com.smartdevicelink.managers.CompletionListener;
 import com.smartdevicelink.managers.SdlManager;
 import com.smartdevicelink.managers.SdlManagerListener;
@@ -50,24 +52,15 @@ import java.util.List;
 import java.util.Vector;
 
 public class SdlService extends Service {
+	private static final String TAG = SdlService.class.getSimpleName();
 
-	private static final String TAG 					= "SDL Service";
-
-	private static final String APP_NAME 				= "Hello Eric";
-	private static final String APP_NAME_ES 			= "Hola Eric";
-	private static final String APP_NAME_FR 			= "Bonjour Eric";
 	private static final String APP_ID 					= "8678309";
-
 	private static final String ICON_FILENAME 			= "hello_sdl_icon.png";
 	private static final String SDL_IMAGE_FILENAME  	= "sdl_full_image.png";
-
 	private static final String WELCOME_SHOW 			= "Welcome Eric";
 	private static final String WELCOME_SPEAK 			= "Welcome Eric. I think you're awesome!";
-
 	private static final String TEST_COMMAND_NAME 		= "Hello Eric. Have a great day!";
-
 	private static final int FOREGROUND_SERVICE_ID = 111;
-
 	// TCP/IP transport config
 	// The default port is 12345
 	// The IP is of the machine that is running SDL Core
@@ -97,11 +90,11 @@ public class SdlService extends Service {
 	@SuppressLint("NewApi")
 	public void enterForeground() {
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			NotificationChannel channel = new NotificationChannel(APP_ID, "SdlService", NotificationManager.IMPORTANCE_DEFAULT);
-			NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+			final NotificationChannel channel = new NotificationChannel(APP_ID, "SdlService", NotificationManager.IMPORTANCE_DEFAULT);
+			final NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 			if (notificationManager != null) {
 				notificationManager.createNotificationChannel(channel);
-				Notification serviceNotification = new Notification.Builder(this, channel.getId())
+				final Notification serviceNotification = new Notification.Builder(this, channel.getId())
 						.setContentTitle("Connected through SDL")
 						.setSmallIcon(R.drawable.ic_sdl)
 						.build();
@@ -155,18 +148,18 @@ public class SdlService extends Service {
 			} else if (BuildConfig.TRANSPORT.equals("TCP")) {
 				transport = new TCPTransportConfig(TCP_PORT, DEV_MACHINE_IP_ADDRESS, true);
 			} else if (BuildConfig.TRANSPORT.equals("MULTI_HB")) {
-				MultiplexTransportConfig mtc = new MultiplexTransportConfig(this, APP_ID, MultiplexTransportConfig.FLAG_MULTI_SECURITY_OFF);
+				final MultiplexTransportConfig mtc = new MultiplexTransportConfig(this, APP_ID, MultiplexTransportConfig.FLAG_MULTI_SECURITY_OFF);
 				mtc.setRequiresHighBandwidth(true);
 				transport = mtc;
 			}
 
 			// The app type to be used
-			Vector<AppHMIType> appType = new Vector<>();
+			final Vector<AppHMIType> appType = new Vector<>();
 			appType.add(AppHMIType.DEFAULT);
 
 			// The manager listener helps you know when certain events that pertain to the SDL Manager happen
 			// Here we will listen for ON_HMI_STATUS and ON_COMMAND notifications
-			SdlManagerListener listener = new SdlManagerListener() {
+			final SdlManagerListener listener = new SdlManagerListener() {
 				@Override
 				public void onStart() {
 					// HMI Status Listener
@@ -199,27 +192,16 @@ public class SdlService extends Service {
 
 				@Override
 				public LifecycleConfigurationUpdate managerShouldUpdateLifecycle(Language language){
-					String appName;
-					switch (language) {
-						case ES_MX:
-							appName = APP_NAME_ES;
-							break;
-						case FR_CA:
-							appName = APP_NAME_FR;
-							break;
-						default:
-							return null;
-					}
-
-					return new LifecycleConfigurationUpdate(appName,null,TTSChunkFactory.createSimpleTTSChunks(appName), null);
+					final String appName = getResources().getString(R.string.app_name);
+					return new LifecycleConfigurationUpdate(appName, null, TTSChunkFactory.createSimpleTTSChunks(appName), null);
 				}
 			};
 
 			// Create App Icon, this is set in the SdlManager builder
-			SdlArtwork appIcon = new SdlArtwork(ICON_FILENAME, FileType.GRAPHIC_PNG, R.mipmap.ic_launcher, true);
+			final SdlArtwork appIcon = new SdlArtwork(ICON_FILENAME, FileType.GRAPHIC_PNG, R.mipmap.ic_launcher, true);
 
 			// The manager builder sets options for your session
-			SdlManager.Builder builder = new SdlManager.Builder(this, APP_ID, APP_NAME, listener);
+			final SdlManager.Builder builder = new SdlManager.Builder(this, APP_ID, getResources().getString(R.string.app_name), listener);
 			builder.setAppTypes(appType);
 			builder.setTransportType(transport);
 			builder.setAppIcon(appIcon);
@@ -232,18 +214,17 @@ public class SdlService extends Service {
 	 * Send some voice commands
 	 */
 	private void setVoiceCommands(){
+		final List<String> list1 = Collections.singletonList("Command One");
+		final List<String> list2 = Collections.singletonList("Command two");
 
-		List<String> list1 = Collections.singletonList("Command One");
-		List<String> list2 = Collections.singletonList("Command two");
-
-		VoiceCommand voiceCommand1 = new VoiceCommand(list1, new VoiceCommandSelectionListener() {
+		final VoiceCommand voiceCommand1 = new VoiceCommand(list1, new VoiceCommandSelectionListener() {
 			@Override
 			public void onVoiceCommandSelected() {
 				Log.i(TAG, "Voice Command 1 triggered");
 			}
 		});
 
-		VoiceCommand voiceCommand2 = new VoiceCommand(list2, new VoiceCommandSelectionListener() {
+		final VoiceCommand voiceCommand2 = new VoiceCommand(list2, new VoiceCommandSelectionListener() {
 			@Override
 			public void onVoiceCommandSelected() {
 				Log.i(TAG, "Voice Command 2 triggered");
@@ -257,14 +238,13 @@ public class SdlService extends Service {
 	 *  Add menus for the app on SDL.
 	 */
 	private void sendMenus(){
-
 		// some arts
-		SdlArtwork livio = new SdlArtwork("livio", FileType.GRAPHIC_PNG, R.drawable.sdl, false);
+		final SdlArtwork livio = new SdlArtwork("livio", FileType.GRAPHIC_PNG, R.drawable.sdl, false);
 
 		// some voice commands
-		List<String> voice2 = Collections.singletonList("Cell two");
+		final List<String> voice2 = Collections.singletonList("Cell two");
 
-		MenuCell mainCell1 = new MenuCell("Test Cell 1 (speak)", livio, null, new MenuSelectionListener() {
+		final MenuCell mainCell1 = new MenuCell("Test Cell 1 (speak)", livio, null, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				Log.i(TAG, "Test cell 1 triggered. Source: "+ trigger.toString());
@@ -272,7 +252,7 @@ public class SdlService extends Service {
 			}
 		});
 
-		MenuCell mainCell2 = new MenuCell("Test Cell 2", null, voice2, new MenuSelectionListener() {
+		final MenuCell mainCell2 = new MenuCell("Test Cell 2", null, voice2, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				Log.i(TAG, "Test cell 2 triggered. Source: "+ trigger.toString());
@@ -281,14 +261,14 @@ public class SdlService extends Service {
 
 		// SUB MENU
 
-		MenuCell subCell1 = new MenuCell("SubCell 1",null, null, new MenuSelectionListener() {
+		final MenuCell subCell1 = new MenuCell("SubCell 1",null, null, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				Log.i(TAG, "Sub cell 1 triggered. Source: "+ trigger.toString());
 			}
 		});
 
-		MenuCell subCell2 = new MenuCell("SubCell 2",null, null, new MenuSelectionListener() {
+		final MenuCell subCell2 = new MenuCell("SubCell 2",null, null, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				Log.i(TAG, "Sub cell 2 triggered. Source: "+ trigger.toString());
@@ -296,16 +276,16 @@ public class SdlService extends Service {
 		});
 
 		// sub menu parent cell
-		MenuCell mainCell3 = new MenuCell("Test Cell 3 (sub menu)", MenuLayout.LIST, null, Arrays.asList(subCell1,subCell2));
+		final MenuCell mainCell3 = new MenuCell("Test Cell 3 (sub menu)", MenuLayout.LIST, null, Arrays.asList(subCell1,subCell2));
 
-		MenuCell mainCell4 = new MenuCell("Show Perform Interaction", null, null, new MenuSelectionListener() {
+		final MenuCell mainCell4 = new MenuCell("Show Perform Interaction", null, null, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				showPerformInteraction();
 			}
 		});
 
-		MenuCell mainCell5 = new MenuCell("Clear the menu",null, null, new MenuSelectionListener() {
+		final MenuCell mainCell5 = new MenuCell("Clear the menu",null, null, new MenuSelectionListener() {
 			@Override
 			public void onTriggered(TriggerSource trigger) {
 				Log.i(TAG, "Clearing Menu. Source: "+ trigger.toString());
@@ -333,7 +313,7 @@ public class SdlService extends Service {
 	 */
 	private void performWelcomeShow() {
 		sdlManager.getScreenManager().beginTransaction();
-		sdlManager.getScreenManager().setTextField1(APP_NAME);
+		sdlManager.getScreenManager().setTextField1(getResources().getString(R.string.app_name));
 		sdlManager.getScreenManager().setTextField2(WELCOME_SHOW);
 		sdlManager.getScreenManager().setPrimaryGraphic(new SdlArtwork(SDL_IMAGE_FILENAME, FileType.GRAPHIC_PNG, R.drawable.sdl, true));
 		sdlManager.getScreenManager().commit(new CompletionListener() {
@@ -359,7 +339,7 @@ public class SdlService extends Service {
 	}
 
 	private void showAlert(String text){
-		Alert alert = new Alert();
+		final Alert alert = new Alert();
 		alert.setAlertText1(text);
 		alert.setDuration(5000);
 		sdlManager.sendRPC(alert);
@@ -368,16 +348,16 @@ public class SdlService extends Service {
 	// Choice Set
 
 	private void preloadChoices(){
-		ChoiceCell cell1 = new ChoiceCell("Item 1");
-		ChoiceCell cell2 = new ChoiceCell("Item 2");
-		ChoiceCell cell3 = new ChoiceCell("Item 3");
+		final ChoiceCell cell1 = new ChoiceCell("Item 1");
+		final ChoiceCell cell2 = new ChoiceCell("Item 2");
+		final ChoiceCell cell3 = new ChoiceCell("Item 3");
 		choiceCellList = new ArrayList<>(Arrays.asList(cell1,cell2,cell3));
 		sdlManager.getScreenManager().preloadChoices(choiceCellList, null);
 	}
 
 	private void showPerformInteraction(){
 		if (choiceCellList != null) {
-			ChoiceSet choiceSet = new ChoiceSet("Choose an Item from the list", choiceCellList, new ChoiceSetSelectionListener() {
+			final ChoiceSet choiceSet = new ChoiceSet("Choose an Item from the list", choiceCellList, new ChoiceSetSelectionListener() {
 				@Override
 				public void onChoiceSelected(ChoiceCell choiceCell, TriggerSource triggerSource, int rowIndex) {
 					showAlert(choiceCell.getText() + " was selected");

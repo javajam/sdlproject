@@ -1,10 +1,15 @@
-package com.eleroy.sdlproject;
+package com.eleroy.sdlproject.views.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+
+import com.eleroy.sdlproject.BuildConfig;
+import com.eleroy.sdlproject.R;
+import com.eleroy.sdlproject.receivers.SdlReceiver;
+import com.eleroy.sdlproject.services.SdlService;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();

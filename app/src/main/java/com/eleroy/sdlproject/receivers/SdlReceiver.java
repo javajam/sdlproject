@@ -1,10 +1,11 @@
-package com.eleroy.sdlproject;
+package com.eleroy.sdlproject.receivers;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.eleroy.sdlproject.services.SdlService;
 import com.smartdevicelink.transport.SdlBroadcastReceiver;
 import com.smartdevicelink.transport.SdlRouterService;
 import com.smartdevicelink.transport.TransportConstants;
@@ -30,7 +31,7 @@ public class SdlReceiver  extends SdlBroadcastReceiver {
 
 	@Override
 	public Class<? extends SdlRouterService> defineLocalSdlRouterClass() {
-		return com.eleroy.sdlproject.SdlRouterService.class;
+		return com.eleroy.sdlproject.services.SdlRouterService.class;
 	}
 
 	@Override
